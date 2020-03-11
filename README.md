@@ -1,4 +1,11 @@
 # PhotoFloat
+
+Imported from https://git.zx2c4.com/PhotoFloat on 20200312
+
+Modified for personal use as follows
+* Reduce the number of thumbnails created by the scanner python script
+* Change fonts and clean home page
+
 ### A Web 2.0 Photo Gallery Done Right via Static JSON & Dynamic Javascript
 #### by Jason A. Donenfeld (<Jason@zx2c4.com>)
 
