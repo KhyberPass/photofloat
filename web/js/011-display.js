@@ -310,7 +310,7 @@ $(document).ready(function() {
 		$("#fullscreen-divider").show();
 		$("#fullscreen").show().click(function() {
 			$("#photo").fullScreen({callback: function(isFullscreen) {
-				maxSize = isFullscreen ? 1024 : 800;
+				maxSize = isFullscreen ? 800 : 800;
 				showPhoto();
 			}});
 		});
