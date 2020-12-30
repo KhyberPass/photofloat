@@ -3,6 +3,11 @@
 Imported from https://git.zx2c4.com/PhotoFloat on 20200312
 
 Modified for personal use as follows
+20Dec2020
+* Update for video support from https://github.com/joachimtingvold/photofloat
+  Note: this was done before 08Mar2020 and therefore using hash 3b9f64b057783dc66f54f97994855fc466e668e7
+	the repositry has moved on since then.
+09Apr2020
 * Reduce the number of thumbnails created by the scanner python script
 * Change fonts and clean home page
 

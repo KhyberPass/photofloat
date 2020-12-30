@@ -182,7 +182,7 @@ $(document).ready(function() {
 			video.css("height", "").css("width", "").parent().css("height", video.attr("height")).css("margin-top", - video.attr("height") / 2).css("top", "50%");
 	}
 	function showPhoto() {
-		var width, height, photoSrc, videoSrc, posterSrc, previousPhoto, nextPhoto, nextLink, text;
+		var width, height, photoSrc, videoSrc, previousPhoto, nextPhoto, nextLink, text;
 		width = currentPhoto.size[0];
 		height = currentPhoto.size[1];
 
@@ -196,13 +196,11 @@ $(document).ready(function() {
 			} else {
 				$(window).unbind("resize", scaleVideo);
 				$(window).unbind("resize", scaleImage);
-				videoSrc = photoFloat.originalPhotoPath(currentAlbum, currentPhoto);
-				posterSrc = photoFloat.photoPath(currentAlbum, currentPhoto, 1024, false);
+				videoSrc = photoFloat.videoPath(currentAlbum, currentPhoto);
 				$('<video/>', { id: 'video', controls: true }).appendTo('#video-box-inner')
 					.attr("width", width).attr("height", height).attr("ratio", currentPhoto.size[0] / currentPhoto.size[1])
 					.attr("src", videoSrc)
 					.attr("alt", currentPhoto.name)
-					.attr("poster", posterSrc)
 					.on('loadstart', scaleVideo);
 			}
 			$("head").append("<link rel=\"video_src\" href=\"" + videoSrc + "\" />");
