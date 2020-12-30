@@ -114,11 +114,18 @@ class Album(object):
 		return None
 
 class Photo(object):
-	thumb_sizes = [ (75, True), (150, True), (640, False), (1024, False), (1600, False) ]
+	thumb_sizes = [ (150, True), (800, False) ]
 	def __init__(self, path, thumb_path=None, attributes=None):
 		self._path = trim_base(path)
 		self.is_valid = True
 		image = None
+
+    #ignore some file types
+		filename, file_extension = os.path.splitext(path)
+		if file_extension == ".AAE":
+				message("skipping", self._path)
+				self.is_valid = False
+				return
 		try:
 			mtime = file_mtime(path)
 		except KeyboardInterrupt:
@@ -258,7 +265,8 @@ class Photo(object):
 
 
 	def _video_metadata(self, path, original=True):
-		p = VideoProbeWrapper().call('-show_format', '-show_streams', '-of', 'json', '-loglevel', '0', path)
+		#import pdb; pdb.set_trace()
+		p = VideoProbeWrapper().call('--Output=file:///home/mythtv/mediainfo-json.txt', path)
 		if p == False:
 			self.is_valid = False
 			return
@@ -269,6 +277,8 @@ class Photo(object):
 				self._attributes["size"] = (int(s["width"]), int(s["height"]))
 				if "duration" in s:
 					self._attributes["duration"] = s["duration"]
+				if "rotate" in s:
+					self._attributes["rotate"] = str(s["rotate"]).replace(".0", "")
 				if "tags" in s and "rotate" in s["tags"]:
 					self._attributes["rotate"] = s["tags"]["rotate"]
 				if original:
@@ -380,6 +390,9 @@ class Photo(object):
 				pass
 		
 	def _photo_thumbnails(self, original_path, thumb_path):
+		for size in Photo.thumb_sizes:
+			self._photo_thumbnail(original_path, thumb_path, size[0], size[1])
+		return
 		# get number of cores on the system, and use all minus one
 		num_of_cores = os.sysconf('SC_NPROCESSORS_ONLN') - 1
 		pool = Pool(processes=num_of_cores)
@@ -438,7 +451,7 @@ class Photo(object):
 			elif self._attributes["rotate"] == "270":
 				mirror = image.transpose(Image.ROTATE_90)
 		for size in Photo.thumb_sizes:
-			if size[1]:
+			if size[1] or size[0] == 1024:
 				self._thumbnail(mirror, original_path, thumb_path, size[0], size[1])
 		try:
 			os.unlink(tfn)
@@ -446,19 +459,17 @@ class Photo(object):
 			pass
 	
 	def _video_transcode(self, transcode_path, original_path):
+		return
+		
 		transcode_path = os.path.join(transcode_path, video_cache(self._path))
 		# get number of cores on the system, and use all minus one
 		num_of_cores = os.sysconf('SC_NPROCESSORS_ONLN') - 1
 		transcode_cmd = [	
 			'-i', original_path,		# original file to be encoded
-			'-c:v', 'libx264',		# set h264 as videocodec
-			'-preset', 'slow',		# set specific preset that provides a certain encoding speed to compression ratio
-			'-profile:v', 'baseline',	# set output to specific h264 profile
-			'-level', '3.0',		# sets highest compatibility with target devices
+			'-vcodec', 'libx264',		# set h264 as videocodec
 			'-crf', '20',			# set quality 
-			'-b:v', '4M',			# set videobitrate to 4Mbps
 			'-strict', 'experimental',	# allow native aac codec below
-			'-c:a', 'aac',			# set aac as audiocodec
+			'-acodec', 'aac',			# set aac as audiocodec
 			'-ac', '2',			# force two audiochannels
 			'-ab', '160k',			# set audiobitrate to 160Kbps
 			'-maxrate', '10000000',		# limits max rate, will degrade CRF if needed
@@ -534,7 +545,7 @@ class Photo(object):
 		caches = []
 		if "mediaType" in self._attributes and self._attributes["mediaType"] == "video":
 			for size in Photo.thumb_sizes:
-				if size[1]:
+				if size[1] or size[0] == 1024:
 					caches.append(image_cache(self._path, size[0], size[1]))
 			caches.append(video_cache(self._path))
 		else:

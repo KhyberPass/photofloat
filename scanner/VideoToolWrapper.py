@@ -42,6 +42,6 @@ class VideoTranscodeWrapper(VideoToolWrapper):
 
 class VideoProbeWrapper(VideoToolWrapper):
 	def __init__(self):
-		self.wrappers = ['avprobe', 'ffprobe']
+		self.wrappers = ['avprobe', 'mediainfo']
 		self.check_output = True
 		self.cleanup = False
