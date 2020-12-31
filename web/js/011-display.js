@@ -27,7 +27,7 @@ $(document).ready(function() {
 	var previousPhoto = null;
 	var originalTitle = document.title;
 	var photoFloat = new PhotoFloat();
-	var maxSize = 1024;
+	var maxSize = 800;
 	
 	
 	/* Displays */
@@ -197,7 +197,7 @@ $(document).ready(function() {
 				$(window).unbind("resize", scaleVideo);
 				$(window).unbind("resize", scaleImage);
 				videoSrc = photoFloat.originalPhotoPath(currentAlbum, currentPhoto);
-				posterSrc = photoFloat.photoPath(currentAlbum, currentPhoto, 1024, false);
+				posterSrc = photoFloat.photoPath(currentAlbum, currentPhoto, maxSize, false);
 				$('<video/>', { id: 'video', controls: true }).appendTo('#video-box-inner')
 					.attr("width", width).attr("height", height).attr("ratio", currentPhoto.size[0] / currentPhoto.size[1])
 					.attr("src", videoSrc)

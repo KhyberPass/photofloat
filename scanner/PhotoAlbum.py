@@ -451,7 +451,7 @@ class Photo(object):
 			elif self._attributes["rotate"] == "270":
 				mirror = image.transpose(Image.ROTATE_90)
 		for size in Photo.thumb_sizes:
-			if size[1] or size[0] == 1024:
+			if size[1] or size[0] == 800:
 				self._thumbnail(mirror, original_path, thumb_path, size[0], size[1])
 		try:
 			os.unlink(tfn)
@@ -545,7 +545,7 @@ class Photo(object):
 		caches = []
 		if "mediaType" in self._attributes and self._attributes["mediaType"] == "video":
 			for size in Photo.thumb_sizes:
-				if size[1] or size[0] == 1024:
+				if size[1] or size[0] == 800:
 					caches.append(image_cache(self._path, size[0], size[1]))
 			caches.append(video_cache(self._path))
 		else:
