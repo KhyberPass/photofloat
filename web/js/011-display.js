@@ -27,7 +27,7 @@ $(document).ready(function() {
 	var previousPhoto = null;
 	var originalTitle = document.title;
 	var photoFloat = new PhotoFloat();
-	var maxSize = 800;
+	var maxSize = 1024;
 	
 	
 	/* Displays */

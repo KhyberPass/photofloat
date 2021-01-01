@@ -114,7 +114,7 @@ class Album(object):
 		return None
 
 class Photo(object):
-	thumb_sizes = [ (150, True), (800, False) ]
+	thumb_sizes = [ (150, True), (1024, False) ]
 	def __init__(self, path, thumb_path=None, attributes=None):
 		self._path = trim_base(path)
 		self.is_valid = True
@@ -451,7 +451,7 @@ class Photo(object):
 			elif self._attributes["rotate"] == "270":
 				mirror = image.transpose(Image.ROTATE_90)
 		for size in Photo.thumb_sizes:
-			if size[1] or size[0] == 800:
+			if size[1] or size[0] == 1024:
 				self._thumbnail(mirror, original_path, thumb_path, size[0], size[1])
 		try:
 			os.unlink(tfn)
@@ -459,6 +459,9 @@ class Photo(object):
 			pass
 	
 	def _video_transcode(self, transcode_path, original_path):
+        #
+        # Do not re-encode video, iPhone MOV format plays ok by default
+        #
 		return
 		
 		transcode_path = os.path.join(transcode_path, video_cache(self._path))
@@ -545,7 +548,7 @@ class Photo(object):
 		caches = []
 		if "mediaType" in self._attributes and self._attributes["mediaType"] == "video":
 			for size in Photo.thumb_sizes:
-				if size[1] or size[0] == 800:
+				if size[1] or size[0] == 1024:
 					caches.append(image_cache(self._path, size[0], size[1]))
 			caches.append(video_cache(self._path))
 		else:
