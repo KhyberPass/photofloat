@@ -122,7 +122,7 @@ class Photo(object):
 
     #ignore some file types
 		filename, file_extension = os.path.splitext(path)
-		if file_extension == ".AAE":
+		if file_extension == ".AAE" or file_extension == ".THM" or file_extension == ".zip" or file_extension == ".psp" or file_extension == ".txt" or file_extension == ".xls" or file_extension == ".jbf" or file_extension == ".psd":
 				message("skipping", self._path)
 				self.is_valid = False
 				return
@@ -270,7 +270,14 @@ class Photo(object):
 		if p == False:
 			self.is_valid = False
 			return
-		info = json.loads(p)
+		# Fill out the rotate field if it is blank
+		p = p.replace('"rotate":\n}', '"rotate":0\n}')
+		try:
+			info = json.loads(p)
+		except:
+			# Something wrong with the json so hard code it
+			self._attributes["mediaType"] = "video"
+			return
 		for s in info["streams"]:
 			if 'codec_type' in s and s['codec_type'] == 'video':
 				self._attributes["mediaType"] = "video"
