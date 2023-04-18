@@ -360,7 +360,7 @@ $(document).ready(function() {
 		$("#fullscreen-divider").show();
 		$("#fullscreen").show().click(function() {
 			$("#photo").fullScreen({callback: function(isFullscreen) {
-				maxSize = isFullscreen ? 1600 : 1024;
+				maxSize = isFullscreen ? 1024 : 1024;
 				showPhoto();
 			}});
 		});
