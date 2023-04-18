@@ -1,10 +1,16 @@
 from CachePath import *
 from datetime import datetime
 import json
+import sys
 import os
 import os.path
-from PIL import Image
+from PIL import Image, TiffImagePlugin
 from PIL.ExifTags import TAGS
+try:
+	from pillow_heif import register_heif_opener
+	pillowHeif = True
+except:
+	pillowHeif = False
 from multiprocessing import Pool
 import gc
 import tempfile
@@ -119,8 +125,10 @@ class Photo(object):
 		self._path = trim_base(path)
 		self.is_valid = True
 		image = None
+		if pillowHeif:
+			register_heif_opener()
 
-    #ignore some file types
+		#ignore some file types
 		filename, file_extension = os.path.splitext(path)
 		if file_extension == ".AAE" or file_extension == ".THM" or file_extension == ".zip" or file_extension == ".psp" or file_extension == ".txt" or file_extension == ".xls" or file_extension == ".jbf" or file_extension == ".psd":
 				message("skipping", self._path)
@@ -161,7 +169,10 @@ class Photo(object):
 		self._attributes["size"] = image.size
 		self._orientation = 1
 		try:
-			info = image._getexif()
+			if image.format == 'HEIF':
+				info = image.getexif()
+			else:
+				info = image._getexif()
 		except KeyboardInterrupt:
 			raise
 		except:
@@ -172,9 +183,9 @@ class Photo(object):
 		exif = {}
 		for tag, value in info.items():
 			decoded = TAGS.get(tag, tag)
-                        if (isinstance(value, tuple) or isinstance(value, list)) and (isinstance(decoded, str) or isinstance(decoded, unicode)) and decoded.startswith("DateTime") and len(value) >= 1:
+			if (isinstance(value, tuple) or isinstance(value, list)) and (isinstance(decoded, str) or isinstance(decoded, unicode)) and decoded.startswith("DateTime") and len(value) >= 1:
 				value = value[0]
-			if isinstance(value, str) or isinstance(value, unicode):
+			if isinstance(value, str) or (sys.version_info[0] < 3 and isinstance(value, unicode)):
 				value = value.strip().partition("\x00")[0]
 				if (isinstance(decoded, str) or isinstance(decoded, unicode)) and decoded.startswith("DateTime"):
 					try:
@@ -271,6 +282,7 @@ class Photo(object):
 			self.is_valid = False
 			return
 		# Fill out the rotate field if it is blank
+		p = p.decode()
 		p = p.replace('"rotate":\n}', '"rotate":0\n}')
 		try:
 			info = json.loads(p)
@@ -466,9 +478,9 @@ class Photo(object):
 			pass
 	
 	def _video_transcode(self, transcode_path, original_path):
-        #
-        # Do not re-encode video, iPhone MOV format plays ok by default
-        #
+		#
+		# Do not re-encode video, iPhone MOV format plays ok by default
+		#
 		return
 		
 		transcode_path = os.path.join(transcode_path, video_cache(self._path))
@@ -582,7 +594,13 @@ class Photo(object):
 		if date_compare == 0:
 			return cmp(self.name, other.name)
 		return date_compare
+
+	def __lt__(self, other):
+		return self.date < other.date
 		
+	def __gt__(self, other):
+		return self.date > other.date
+
 	@property
 	def attributes(self):
 		return self._attributes
@@ -611,5 +629,7 @@ class PhotoAlbumEncoder(json.JSONEncoder):
 			return obj.strftime("%a %b %d %H:%M:%S %Y")
 		if isinstance(obj, Album) or isinstance(obj, Photo):
 			return obj.to_dict()
+		if isinstance(obj, TiffImagePlugin.IFDRational):
+			return ""
 		return json.JSONEncoder.default(self, obj)
 		

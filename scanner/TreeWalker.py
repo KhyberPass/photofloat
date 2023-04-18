@@ -8,8 +8,12 @@ import json
 
 class TreeWalker:
 	def __init__(self, album_path, cache_path):
-		self.album_path = os.path.abspath(album_path).decode(sys.getfilesystemencoding())
-		self.cache_path = os.path.abspath(cache_path).decode(sys.getfilesystemencoding())
+		if sys.version_info[0] < 3:
+			self.album_path = os.path.abspath(album_path).decode(sys.getfilesystemencoding())
+			self.cache_path = os.path.abspath(cache_path).decode(sys.getfilesystemencoding())
+		else:
+			self.album_path = os.path.abspath(album_path)
+			self.cache_path = os.path.abspath(cache_path)
 		set_cache_path_base(self.album_path)
 		self.all_albums = list()
 		self.all_photos = list()
@@ -49,12 +53,13 @@ class TreeWalker:
 			if entry[0] == '.':
 				continue
 			try:
-				entry = entry.decode(sys.getfilesystemencoding())
+				if sys.version_info[0] < 3:
+					entry = entry.decode(sys.getfilesystemencoding())
 			except KeyboardInterrupt:
 				raise
 			except:
 				next_level()
-				message("unicode error", entry.decode(sys.getfilesystemencoding(), "replace"))
+				message("unicode error", entry)
 				back_level()
 				continue
 			entry = os.path.join(path, entry)
