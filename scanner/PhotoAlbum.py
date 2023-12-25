@@ -11,10 +11,12 @@ try:
 	pillowHeif = True
 except:
 	pillowHeif = False
+from exiftool import ExifToolHelper
 from multiprocessing import Pool
 import gc
 import tempfile
 from VideoToolWrapper import *
+#import pdb; pdb.set_trace()
 
 def make_photo_thumbs(self, original_path, thumb_path, size):
 	# The pool methods use a queue.Queue to pass tasks to the worker processes.
@@ -153,7 +155,8 @@ class Photo(object):
 		except KeyboardInterrupt:
 			raise
 		except:
-			self._video_metadata(path)
+			self._media_metadata(path)
+			#self._video_metadata(path)
 
 		if isinstance(image, Image.Image):
 			self._photo_metadata(image)
@@ -275,8 +278,89 @@ class Photo(object):
 	_photo_metadata.subject_distance_range_list = ["Unknown", "Macro", "Close view", "Distant view"]
 
 
+	def _media_metadata(self, path, original=True):
+		# Use exiftool to get the exif data
+		exif = {}
+		with ExifToolHelper() as et:
+			for d in et.get_metadata(path):
+				for k, v in d.items():
+					try:
+						k = k.replace('QuickTime:', '')
+					except:
+						k = k
+					exif[k] = v
+
+		if "Orientation" in exif:
+			self._orientation = exif["EXIF:Orientation"];
+			if self._orientation in range(5, 9):
+				self._attributes["size"] = (self._attributes["size"][1], self._attributes["size"][0])
+			if self._orientation - 1 < len(self._photo_metadata.orientation_list):
+				self._attributes["orientation"] = self._photo_metadata.orientation_list[self._orientation - 1]
+		if "Make" in exif:
+			self._attributes["make"] = exif["Make"]
+		if "Model" in exif:
+			self._attributes["model"] = exif["Model"]
+		if "ApertureValue" in exif:
+			self._attributes["aperture"] = exif["ApertureValue"]
+		elif "FNumber" in exif:
+			self._attributes["aperture"] = exif["FNumber"]
+		if "FocalLength" in exif:
+			self._attributes["focalLength"] = exif["FocalLength"]
+		if "ISOSpeedRatings" in exif:
+			self._attributes["iso"] = exif["ISOSpeedRatings"]
+		if "ISO" in exif:
+			self._attributes["iso"] = exif["ISO"]
+		if "PhotographicSensitivity" in exif:
+			self._attributes["iso"] = exif["PhotographicSensitivity"]
+		if "ExposureTime" in exif:
+			self._attributes["exposureTime"] = exif["ExposureTime"]
+		if "Flash" in exif and exif["Flash"] in self._photo_metadata.flash_dictionary:
+			try:
+				self._attributes["flash"] = self._photo_metadata.flash_dictionary[exif["Flash"]]
+			except KeyboardInterrupt:
+				raise
+			except:
+				pass
+		if "LightSource" in exif and exif["LightSource"] in self._photo_metadata.light_source_dictionary:
+			try:
+				self._attributes["lightSource"] = self._photo_metadata.light_source_dictionary[exif["LightSource"]]
+			except KeyboardInterrupt:
+				raise
+			except:
+				pass
+		if "ExposureProgram" in exif and exif["ExposureProgram"] < len(self._photo_metadata.exposure_list):
+			self._attributes["exposureProgram"] = self._photo_metadata.exposure_list[exif["ExposureProgram"]]
+		if "SpectralSensitivity" in exif:
+			self._attributes["spectralSensitivity"] = exif["SpectralSensitivity"]
+		if "MeteringMode" in exif and exif["MeteringMode"] < len(self._photo_metadata.metering_list):
+			self._attributes["meteringMode"] = self._photo_metadata.metering_list[exif["MeteringMode"]]
+		if "SensingMethod" in exif and exif["SensingMethod"] < len(self._photo_metadata.sensing_method_list):
+			self._attributes["sensingMethod"] = self._photo_metadata.sensing_method_list[exif["SensingMethod"]]
+		if "SceneCaptureType" in exif and exif["SceneCaptureType"] < len(self._photo_metadata.scene_capture_type_list):
+			self._attributes["sceneCaptureType"] = self._photo_metadata.scene_capture_type_list[exif["SceneCaptureType"]]
+		if "SubjectDistanceRange" in exif and exif["SubjectDistanceRange"] < len(self._photo_metadata.subject_distance_range_list):
+			self._attributes["subjectDistanceRange"] = self._photo_metadata.subject_distance_range_list[exif["SubjectDistanceRange"]]
+		if "ExposureCompensation" in exif:
+			self._attributes["exposureCompensation"] = exif["ExposureCompensation"]
+		if "ExposureBiasValue" in exif:
+			self._attributes["exposureCompensation"] = exif["ExposureBiasValue"]
+		if "DateTimeOriginal" in exif:
+			try:
+				self._attributes["dateTimeOriginal"] = datetime.strptime(exif["DateTimeOriginal"], '%Y:%m:%d %H:%M:%S')
+			except KeyboardInterrupt:
+				raise
+			except TypeError:
+				self._attributes["dateTimeOriginal"] = exif["DateTimeOriginal"]
+		if "CreateDate" in exif:
+			try:
+				self._attributes["dateTime"] = datetime.strptime(exif["CreateDate"], '%Y:%m:%d %H:%M:%S')
+			except KeyboardInterrupt:
+				raise
+			except TypeError:
+				self._attributes["dateTime"] = exif["CreateDate"]
+
+
 	def _video_metadata(self, path, original=True):
-		#import pdb; pdb.set_trace()
 		p = VideoProbeWrapper().call('--Output=file:///home/mythtv/mediainfo-json.txt', path)
 		if p == False:
 			self.is_valid = False
