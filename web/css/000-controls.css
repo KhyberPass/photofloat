@@ -19,6 +19,14 @@ a:hover {
 	font-weight: bold;
 	font-size: 1.15em;
 }
+#menu {
+	position: absolute;
+	top: 0;
+    right: 0;
+	padding: 0.4em;
+	font-weight: bold;
+	font-size: 1.15em;
+}
 #loading {
 	display: none;
 }

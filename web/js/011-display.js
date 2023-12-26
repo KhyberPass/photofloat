@@ -28,6 +28,7 @@ $(document).ready(function() {
 	var originalTitle = document.title;
 	var photoFloat = new PhotoFloat();
 	var maxSize = 1024;
+  var slideShowEnable = false;
   var slideshowTimerId = null;
 	
 	
@@ -274,7 +275,8 @@ $(document).ready(function() {
 		$("#subalbums").hide();
 		$("#photo-view").show();
     
-    slideshowTimerId = setTimeout(slideshowNext, 10000);
+    if (slideShowEnable == true)
+      slideshowTimerId = setTimeout(slideshowNext, 10000);
 	}
 	
 	
@@ -378,6 +380,20 @@ $(document).ready(function() {
 			}});
 		});
 	}
+	$("#menu").click(function() {
+    if (slideshowTimerId != null)
+      clearTimeout(slideshowTimerId);
+
+    if (slideShowEnable == false) {
+      slideShowEnable = true;
+      slideshowTimerId = setTimeout(slideshowNext, 10000);
+      $("#menu").html("<a href='javascript:void(0)'>Stop</a>");
+    }
+    else {
+      slideShowEnable = false;
+      $("#menu").html("<a href='javascript:void(0)'>SlideShow</a>");
+    }
+	});
 	$("#metadata-link").click(function() {
 		if (!$("#metadata").is(":visible"))
 			$("#metadata").stop()
