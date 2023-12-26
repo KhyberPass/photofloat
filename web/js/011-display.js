@@ -28,6 +28,7 @@ $(document).ready(function() {
 	var originalTitle = document.title;
 	var photoFloat = new PhotoFloat();
 	var maxSize = 1024;
+  var slideshowTimerId = null;
 	
 	
 	/* Displays */
@@ -185,7 +186,7 @@ $(document).ready(function() {
 		var width, height, photoSrc, videoSrc, posterSrc, previousPhoto, nextPhoto, nextLink, text;
 		width = currentPhoto.size[0];
 		height = currentPhoto.size[1];
-
+    
 		if (currentPhoto.mediaType == "video") {
 			$("#video-box-inner").empty();
 			if (!Modernizr.video) {
@@ -272,6 +273,8 @@ $(document).ready(function() {
 		$("#album-view").addClass("photo-view-container");
 		$("#subalbums").hide();
 		$("#photo-view").show();
+    
+    slideshowTimerId = setTimeout(slideshowNext, 10000);
 	}
 	
 	
@@ -310,7 +313,12 @@ $(document).ready(function() {
 			showPhoto();
 		showAlbum(previousAlbum !== currentAlbum);
 	}
-	
+
+  function slideshowNext() {
+    if (currentPhoto != null)
+      window.location.href = $("#next").attr("href");
+  }
+  
 	/* Event listeners */
 	
 	$(window).hashchange(function() {
@@ -361,6 +369,11 @@ $(document).ready(function() {
 		$("#fullscreen").show().click(function() {
 			$("#photo").fullScreen({callback: function(isFullscreen) {
 				maxSize = isFullscreen ? 1024 : 1024;
+        
+        // Cancel the slideshow timer
+        if (slideshowTimerId != null)
+          clearTimeout(slideshowTimerId);
+        
 				showPhoto();
 			}});
 		});
@@ -396,3 +409,4 @@ $(document).ready(function() {
 		return false;
 	});
 });
+
