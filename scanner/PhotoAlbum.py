@@ -279,6 +279,8 @@ class Photo(object):
 
 
 	def _media_metadata(self, path, original=True):
+		self._attributes["mediaType"] = "video"
+
 		# Use exiftool to get the exif data
 		exif = {}
 		with ExifToolHelper() as et:
@@ -296,8 +298,8 @@ class Photo(object):
 				self._attributes["size"] = (self._attributes["size"][1], self._attributes["size"][0])
 			if self._orientation - 1 < len(self._photo_metadata.orientation_list):
 				self._attributes["orientation"] = self._photo_metadata.orientation_list[self._orientation - 1]
-		if "Make" in exif:
-			self._attributes["make"] = exif["Make"]
+		if "ImageHeight" in exif:
+			self._attributes["size"] = (exif["ImageHeight"], exif["ImageWidth"])
 		if "Model" in exif:
 			self._attributes["model"] = exif["Model"]
 		if "ApertureValue" in exif:
@@ -351,13 +353,15 @@ class Photo(object):
 				raise
 			except TypeError:
 				self._attributes["dateTimeOriginal"] = exif["DateTimeOriginal"]
-		if "CreateDate" in exif:
+		if "CreationDate" in exif:
 			try:
-				self._attributes["dateTime"] = datetime.strptime(exif["CreateDate"], '%Y:%m:%d %H:%M:%S')
+				# Remove the zomezone ending
+				datestrip = exif["CreationDate"].split('+')[0]
+				self._attributes["dateTime"] = datetime.strptime(datestrip, '%Y:%m:%d %H:%M:%S')
 			except KeyboardInterrupt:
 				raise
 			except TypeError:
-				self._attributes["dateTime"] = exif["CreateDate"]
+				self._attributes["dateTime"] = exif["DateTime"]
 
 
 	def _video_metadata(self, path, original=True):
