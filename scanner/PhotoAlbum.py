@@ -58,6 +58,10 @@ class Album(object):
 		return max(self._photos[-1].date, self._albums[-1].date)
 	def __cmp__(self, other):
 		return cmp(self.date, other.date)
+	def __lt__(self, other):
+		return self.date < other.date
+	def __gt__(self, other):
+		return self.date > other.date
 	def add_photo(self, photo):
 		self._photos.append(photo)
 		self._photos_sorted = False
@@ -81,7 +85,7 @@ class Album(object):
 			if not album.empty:
 				return False
 		return True
-		
+
 	def cache(self, base_dir):
 		self._sort()
 		fp = open(os.path.join(base_dir, self.cache_path), 'w')
@@ -149,7 +153,7 @@ class Photo(object):
 		self._attributes = {}
 		self._attributes["dateTimeFile"] = mtime
 		self._attributes["mediaType"] = "photo"
-		
+
 		try:
 			image = Image.open(path)
 		except KeyboardInterrupt:
@@ -167,7 +171,7 @@ class Photo(object):
 		else:
 			self.is_valid = False
 			return
-	
+
 	def _photo_metadata(self, image):
 		self._attributes["size"] = image.size
 		self._orientation = 1
@@ -480,7 +484,7 @@ class Photo(object):
 				bottom = image.size[1] - ((image.size[1] - image.size[0]) / 2)
 			image = image.crop((left, top, right, bottom))
 			gc.collect()
-		image.thumbnail((size, size), Image.ANTIALIAS)
+		image.thumbnail((size, size), Image.LANCZOS)
 		try:
 			image.save(thumb_path, "JPEG", quality=88)
 		except KeyboardInterrupt:
